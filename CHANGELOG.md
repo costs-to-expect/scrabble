@@ -20,7 +20,7 @@ The complete changelog for the Costs to Expect Scrabble game scorer, our changel
   A pill says Saving, Saved or Not saved, a failed save keeps its turn on the screen with a Retry, nothing is lost and
   leaving the page with a turn that is not saved asks first. A turn has an id the browser makes up, so a save that is
   sent again is only ever scored once.
-- Undo, change and remove a turn, and put a removed turn back. They are on (`SCORE_CORRECTIONS`) because nothing is
+- Undo, change and remove a turn (Undo puts a removed turn back). They are on (`SCORE_CORRECTIONS`) because nothing is
   ever taken out of a stored score sheet: a removed turn stays on it marked removed and every turn is always written in
   full, so they work whether the API replaces the sheet it is sent or merges it into the one it has stored. Set
   `SCORE_CORRECTIONS=false` to lock every turn once it is saved. See the README.

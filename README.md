@@ -142,7 +142,7 @@ the same limits, they are written into the page). The server decides what is all
 
 **Undo, change and remove are on** (`SCORE_CORRECTIONS=true`), a slip typing a score on a phone is the usual one, and
 unlike a scorecard there is no combination to check a score against. They are safe because **nothing is ever taken out
-of a stored sheet**. Removing a turn marks it `removed` and it stays on the sheet (so it can be put back), every turn is
+of a stored sheet**. Removing a turn marks it `removed` and it stays on the sheet (that is how Undo puts it back), every turn is
 always written in full, so a correction works whether the API replaces the sheet it is sent or merges it into the one it
 has stored, which is the thing that made the Yahtzee scorer ship them switched off. Set `SCORE_CORRECTIONS=false` to
 lock every turn once it has been saved, the server then refuses to change or remove one.
