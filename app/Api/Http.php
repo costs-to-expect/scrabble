@@ -44,13 +44,18 @@ class Http
         };
     }
 
-    public function get(string $uri, bool $skip_cache = false): array
+    /**
+     * Every read asks the API to skip its cache. Scores, games and players are changed by several people at once, a
+     * scoreboard that lags behind or a turn written back over a stale sheet is worse than a slower page.
+     *
+     * The header is added to a copy of the client, adding it to the client itself would send it with every request
+     * made after this one, writes included.
+     */
+    public function get(string $uri): array
     {
-        if ($skip_cache === false) {
-            $response = $this->client->get($this->baseUri() . $uri);
-        } else {
-            $response = $this->client->withHeaders(['X-Skip-Cache' => 'true'])->get($this->baseUri() . $uri);
-        }
+        $response = (clone $this->client)
+            ->withHeaders(['X-Skip-Cache' => 'true'])
+            ->get($this->baseUri() . $uri);
 
         return match ($response->status()) {
             200 => [
@@ -99,8 +104,9 @@ class Http
 
     public function post(string $uri, array $payload, bool $internal = false): array
     {
+        // Only the request that needs the key carries it, so it is added to a copy of the client
         $client = $internal
-            ? $this->client->withHeaders(['X-Internal-Api-Key' => Config::get('app.config.internal_key')])
+            ? (clone $this->client)->withHeaders(['X-Internal-Api-Key' => Config::get('app.config.internal_key')])
             : $this->client;
 
         $response = $client->post(

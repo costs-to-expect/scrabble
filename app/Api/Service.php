@@ -327,22 +327,13 @@ class Service
         string $resource_type_id,
         string $resource_id,
         array $parameters = [],
-        bool $skip_cache = false,
     ): array
     {
-        if ($skip_cache === true || (array_key_exists('complete', $parameters) && $parameters['complete'] === 1)) {
-            $skip_cache = true;
-        }
-
         $uri = Uri::games($resource_type_id, $resource_id, $parameters);
 
-        return $this->http->get($uri['uri'], $skip_cache);
+        return $this->http->get($uri['uri']);
     }
 
-    /**
-     * Every player's score sheet in a game, always read from the API and never from its cache: turns are written by
-     * several people at once and the scoreboard has to show them, a stale read would also lose a turn on the next write
-     */
     #[ArrayShape(['status' => "integer", 'content' => "array"])]
     public function getGameScoreSheets(
         string $resource_type_id,
@@ -352,7 +343,7 @@ class Service
     {
         $uri = Uri::gameScoreSheets($resource_type_id, $resource_id, $game_id);
 
-        return $this->http->get($uri['uri'], true);
+        return $this->http->get($uri['uri']);
     }
 
     #[ArrayShape(['status' => "integer", 'content' => "array"])]
@@ -363,12 +354,9 @@ class Service
     {
         $uri = Uri::players($resource_type_id, $parameters);
 
-        return $this->http->get($uri['uri'], true);
+        return $this->http->get($uri['uri']);
     }
 
-    /**
-     * One player's score sheet, always read from the API and never from its cache, see getGameScoreSheets()
-     */
     #[ArrayShape(['status' => "integer", 'content' => "array"])]
     public function getPlayerScoreSheet(
         string $resource_type_id,
@@ -379,7 +367,7 @@ class Service
     {
         $uri = Uri::playerScoreSheet($resource_type_id, $resource_id, $game_id, $player_id);
 
-        return $this->http->get($uri['uri'], true);
+        return $this->http->get($uri['uri']);
     }
 
     #[ArrayShape(['status' => "integer", 'content' => "array"])]
@@ -387,7 +375,7 @@ class Service
     {
         $uri = Uri::resources($resource_type_id, $parameters);
 
-        return $this->http->get($uri['uri'], true);
+        return $this->http->get($uri['uri']);
     }
 
     #[ArrayShape(['status' => "integer", 'content' => "array"])]
@@ -395,7 +383,7 @@ class Service
     {
         $uri = Uri::resourceTypes($parameters);
 
-        return $this->http->get($uri['uri'], true);
+        return $this->http->get($uri['uri']);
     }
 
     #[ArrayShape(['status' => "integer", 'content' => "array", 'fields' => "array"])]
