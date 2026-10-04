@@ -101,8 +101,8 @@ final class Stats
      * The numbers across finished games: the records (the best word, the closest game...) and a line for each player.
      * Also the highlights of a single game, pass it as the only game.
      *
-     * A game that ended in a tie is a win for everyone on the top score. A game stored without a player's numbers (it
-     * was finished before they were kept) counts for its scores and its winner, and for nothing else.
+     * A game that ended in a tie is a win for everyone on the top score. A game stored without a player's numbers (one
+     * finished by something other than this app, say) counts for its scores and its winner, and for nothing else.
      *
      * @param list<array<string, mixed>> $games finished games as the API returns them, newest first
      * @return array{

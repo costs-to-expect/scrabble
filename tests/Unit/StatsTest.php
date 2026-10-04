@@ -101,7 +101,7 @@ class StatsTest extends TestCase
     }
 
     /**
-     * Two finished games and one that was finished before the numbers were kept
+     * Two finished games and one that was stored without the players' numbers
      *
      * @return list<array<string, mixed>>
      */

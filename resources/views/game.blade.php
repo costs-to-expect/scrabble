@@ -10,7 +10,7 @@
     $leader = $ranked[0] ?? null;
     $played = GameBoard::playedOn(GameBoard::when($started));
 
-    // The numbers kept with a finished game, a game finished before they were kept has none of them
+    // The highlights come from the numbers kept with the finished game, a game where nobody played a word has none
     $has_stats = $complete && ($stats['words'] ?? 0) > 0;
     $word = fn (?array $play): string => $play === null ? '' : ($play['word'] !== '' ? $play['word'] : 'Word not entered');
 @endphp
@@ -127,7 +127,7 @@
                     </ul>
                 </section>
             @else
-                <p class="mt-4 text-sm text-stone-600">This game was finished before the numbers were kept, so there are no word stats for it.</p>
+                <p class="mt-4 text-sm text-stone-600">No words were played in this game, so there are no word highlights for it.</p>
             @endif
         @endif
     </div>

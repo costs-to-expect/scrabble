@@ -43,6 +43,13 @@ class Start extends Action
             return 422;
         }
 
+        // The same name typed twice is one player, count them once or "Ada" and "ada" would pass for two
+        $unique = [];
+        foreach ($names as $name) {
+            $unique[mb_strtolower($name)] ??= $name;
+        }
+        $names = array_values($unique);
+
         $problem = GameBoard::playersProblem(count($names), (int) Config::get('app.game.min_players'), (int) Config::get('app.game.max_players'), typed: true);
         if ($problem !== null) {
             $this->message = 'Wrong number of players';
