@@ -419,6 +419,25 @@ final class ScoreRules
     }
 
     /**
+     * What a turn is, to slot into a sentence: QUIZ for 102 with the 50 point bingo, a pass, an adjustment of -7
+     */
+    public static function label(array $turn): string
+    {
+        $turn = self::turn($turn);
+
+        if ($turn['kind'] === self::PASS) {
+            return 'a pass';
+        }
+
+        if ($turn['kind'] === self::ADJUST) {
+            return 'an adjustment of ' . self::signed($turn['score']) . ($turn['note'] !== '' ? ' (' . $turn['note'] . ')' : '');
+        }
+
+        return ($turn['word'] !== '' ? $turn['word'] : 'a word') . ' for ' . self::points($turn)
+            . ($turn['bingo'] ? ' with the ' . self::BINGO_BONUS . ' point bingo' : '');
+    }
+
+    /**
      * +52 or -7, with a real minus sign for the screen
      */
     public static function signed(int $points, bool $typographic = false): string

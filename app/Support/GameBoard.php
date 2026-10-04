@@ -106,6 +106,27 @@ final class GameBoard
     }
 
     /**
+     * Why this many players cannot play a game, null when they can. A game needs a few players and the board only has
+     * room for so many racks.
+     *
+     * @param bool $typed the players were typed in a box (names) rather than chosen from the list
+     */
+    public static function playersProblem(int $count, int $min, int $max, bool $typed = false): ?string
+    {
+        if ($count < $min) {
+            return $typed
+                ? 'Enter at least ' . $min . ' names, one per line'
+                : 'Choose at least ' . $min . ' players';
+        }
+
+        if ($count > $max) {
+            return 'A game has room for ' . $max . ' players at most' . ($typed ? ', enter fewer names' : ', choose fewer');
+        }
+
+        return null;
+    }
+
+    /**
      * The player whose turn it is, null when there are no players
      *
      * @param list<array{next: bool}> $standings
