@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Casts;
 
 use Illuminate\Contracts\Database\Eloquent\CastsAttributes;
-use Illuminate\Contracts\Encryption\DecryptException;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Crypt;
 
@@ -13,9 +12,8 @@ use Illuminate\Support\Facades\Crypt;
  * Stores an array as encrypted JSON.
  *
  * A share link holds the owner's bearer token, anyone who could read the table could act as the owner,
- * so the parameters are encrypted with the application key. A value that is still plain JSON (a row the
- * encrypt_share_token_parameters migration has not reached yet) is read as it is and encrypted the next
- * time the model is saved, so deploying the code before running the migration breaks nothing.
+ * so the parameters are encrypted with the application key. A value that cannot be decrypted (the key was
+ * changed since it was written, or the row was not written by the app) is an exception, never a guess.
  *
  * @implements CastsAttributes<array<string, mixed>, array<string, mixed>|string>
  */
@@ -24,6 +22,7 @@ class EncryptedParameters implements CastsAttributes
     /**
      * @param array<string, mixed> $attributes
      * @return array<string, mixed>
+     * @throws \Illuminate\Contracts\Encryption\DecryptException
      * @throws \JsonException
      */
     public function get(Model $model, string $key, mixed $value, array $attributes): array
@@ -32,13 +31,7 @@ class EncryptedParameters implements CastsAttributes
             return [];
         }
 
-        try {
-            $json = Crypt::decryptString($value);
-        } catch (DecryptException) {
-            $json = $value;
-        }
-
-        $decoded = json_decode($json, true, 512, JSON_THROW_ON_ERROR);
+        $decoded = json_decode(Crypt::decryptString($value), true, 512, JSON_THROW_ON_ERROR);
 
         if (is_array($decoded) === false) {
             throw new \JsonException('The share token parameters are not a JSON object');
