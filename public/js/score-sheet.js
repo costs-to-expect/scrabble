@@ -209,7 +209,7 @@
 
         if (turn.kind === 'pass') {
             title = '<span class="block font-bold text-stone-700">Passed</span>';
-            hint = 'Or swapped tiles, it still counts as a turn';
+            hint = 'Or swapped tiles';
             right = '<span class="w-14 text-right text-xl font-extrabold tabular-nums text-stone-400">0</span>';
         } else if (turn.kind === 'adjust') {
             title = '<span class="block font-bold">' + UI.escape(turn.note !== '' ? turn.note : 'Adjustment') + '</span>';
@@ -217,7 +217,7 @@
             right = '<span class="w-14 text-right text-xl font-extrabold tabular-nums">' + UI.signed(worth) + '</span>';
         } else {
             title = '<span class="block font-bold ' + (turn.word !== '' ? 'uppercase tracking-wide' : 'text-stone-700') + '">' + UI.escape(turn.word !== '' ? turn.word : 'A word') + '</span>';
-            hint = turn.bingo ? turn.score + ' + ' + LIMITS.bingo + ' bingo' : turn.score + (turn.score === 1 ? ' point' : ' points');
+            hint = turn.bingo ? turn.score + ' + ' + LIMITS.bingo : turn.score + (turn.score === 1 ? ' point' : ' points');
             right = (turn.bingo ? '<span class="inline-flex items-center gap-1 rounded-full bg-amber-100 px-2 py-0.5 text-xs font-bold text-amber-900">' + UI.icon('star', 'h-3 w-3') + 'Bingo</span>' : '') +
                 '<span class="w-14 text-right text-xl font-extrabold tabular-nums">' + UI.signed(worth) + '</span>';
         }
@@ -245,13 +245,13 @@
     }
 
     function renderStats(mine) {
-        var word = function (turn) { return turn === null ? 'No words yet' : (turn.word !== '' ? UI.escape(turn.word) : 'Word not entered'); };
+        var word = function (turn) { return turn === null ? 'None yet' : (turn.word !== '' ? UI.escape(turn.word) : 'No word'); };
 
         $('player-stats').innerHTML =
             statCard('Best', mine.best === null ? '–' : points(mine.best), word(mine.best), mine.best !== null && mine.best.bingo) +
             statCard('Lowest', mine.lowest === null ? '–' : points(mine.lowest), word(mine.lowest), false) +
-            statCard('Average', average(mine.average), mine.words === 0 ? 'No words yet' : 'a word', false) +
-            statCard('Longest', mine.longest === null ? '–' : mine.longest.word.length, mine.longest === null ? 'No words yet' : UI.escape(mine.longest.word), false);
+            statCard('Average', average(mine.average), mine.words === 0 ? 'None yet' : 'a word', false) +
+            statCard('Longest', mine.longest === null ? '–' : mine.longest.word.length, mine.longest === null ? 'None yet' : UI.escape(mine.longest.word), false);
     }
 
     function renderTurns(mine) {

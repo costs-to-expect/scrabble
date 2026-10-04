@@ -109,7 +109,7 @@
                 <p id="turns-count" class="text-xs text-stone-600"></p>
             </div>
             <ul id="turn-list" class="card-list mt-3"></ul>
-            <div id="turn-empty" hidden class="card-list mt-3 px-4 py-6 text-center text-sm text-stone-600">
+            <div id="turn-empty" hidden class="mt-3 rounded-2xl bg-white px-4 py-6 text-center text-sm text-stone-600 shadow-card ring-1 ring-stone-200/70">
                 <p class="font-bold text-stone-800">No turns yet.</p>
                 <p id="turn-empty-text" class="mt-1"></p>
             </div>

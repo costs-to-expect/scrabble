@@ -99,27 +99,27 @@
             UI.icon('star', 'h-5 w-5') + '<span>Bingo</span><span class="text-xs font-bold">+' + limits().bingo + '</span></button>';
     }
 
+    // The button stays at the bottom of the sheet, however tall the sheet is, so it is always in reach
     function submitButton() {
-        return '<button type="button" id="entry-submit" data-submit class="btn btn-primary btn-block h-14 text-base font-extrabold" disabled></button>';
+        return '<div class="sticky bottom-0 -mx-5 mt-3 bg-white/95 px-5 pb-1 pt-2 backdrop-blur sm:-mx-6 sm:px-6">' +
+            '<button type="button" id="entry-submit" data-submit class="btn btn-primary btn-block h-14 text-base font-extrabold" disabled></button></div>';
     }
 
     function wordPanel() {
         return '<div><label for="entry-word" class="form-label">Word <span class="font-semibold text-stone-600">(optional)</span></label>' +
             '<input id="entry-word" type="text" inputmode="text" enterkeyhint="next" autocomplete="off" autocapitalize="characters" spellcheck="false" maxlength="' + limits().maxLetters + '" value="' + UI.escape(session.word) + '" ' +
             'class="form-control text-xl font-extrabold uppercase tracking-widest placeholder:text-base placeholder:font-semibold placeholder:normal-case placeholder:tracking-normal" placeholder="The main word you played"></div>' +
-            '<div class="mt-3 flex items-stretch gap-2.5">' + display('Score for the word') + bingo() + '</div>' + pad() +
-            '<div class="mt-3">' + submitButton() + '</div>';
+            '<div class="mt-3 flex items-stretch gap-2.5">' + display('Score for the word') + bingo() + '</div>' + pad() + submitButton();
     }
 
     function passPanel() {
-        return '<p class="rounded-2xl bg-stone-50 px-4 py-3.5 text-stone-700 ring-1 ring-stone-200">Passing, or swapping tiles, scores nothing but it is still a turn, so it is the next player&rsquo;s go.</p>' +
-            '<div class="mt-3">' + submitButton() + '</div>';
+        return '<p class="rounded-2xl bg-stone-50 px-4 py-3.5 text-stone-700 ring-1 ring-stone-200">Passing, or swapping tiles, scores nothing but it is still a turn, so it is the next player&rsquo;s go.</p>' + submitButton();
     }
 
     function adjustPanel() {
         var presets = [['Tiles left', true], ['Went out', false], ['Penalty', true]];
 
-        return '<p class="text-sm text-stone-600">For the end of the game: take off the tiles left on a rack, add them for whoever went out, or take off a penalty.</p>' +
+        return '<p class="text-sm text-stone-600">For the end of the game: the tiles left on a rack, going out, or a penalty.</p>' +
             '<div class="mt-3 flex flex-wrap gap-2">' + presets.map(function (preset) {
                 return '<button type="button" data-preset="' + preset[0] + '" data-negative="' + preset[1] + '" class="inline-flex min-h-10 items-center rounded-full bg-white px-4 text-sm font-bold text-stone-800 ring-1 ring-inset ring-stone-300 hover:bg-stone-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600">' + preset[0] + '</button>';
             }).join('') + '</div>' +
@@ -133,7 +133,7 @@
             }).join('') + '</div>' + display('Points') + '</div>' +
             '<label for="entry-adjust-note" class="form-label mt-3">What for <span class="font-semibold text-stone-600">(optional)</span></label>' +
             '<input id="entry-adjust-note" type="text" enterkeyhint="done" autocomplete="off" maxlength="' + limits().maxNote + '" value="' + UI.escape(session.note) + '" class="form-control" placeholder="Tiles left">' +
-            pad() + '<div class="mt-3">' + submitButton() + '</div>';
+            pad() + submitButton();
     }
 
     function panel() {

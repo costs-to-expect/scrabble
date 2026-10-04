@@ -117,8 +117,11 @@
                                     <div><dt class="text-[11px] font-bold uppercase tracking-wider text-stone-600">Average word</dt><dd class="mt-0.5 font-bold tabular-nums">{{ $mine_words > 0 ? number_format($__score['word_points'] / $mine_words, 1) : '–' }}</dd></div>
                                     <div><dt class="text-[11px] font-bold uppercase tracking-wider text-stone-600">Longest word</dt><dd class="mt-0.5 font-bold">@if (($__score['longest'] ?? null) && $__score['longest']['word'] !== ''){{ mb_strlen($__score['longest']['word']) }} <span class="font-semibold uppercase tracking-wide text-stone-600">{{ $__score['longest']['word'] }}</span>@else &ndash; @endif</dd></div>
                                     <div><dt class="text-[11px] font-bold uppercase tracking-wider text-stone-600">Turns</dt><dd class="mt-0.5 font-bold tabular-nums">{{ $__score['turns'] ?? 0 }}<span class="font-semibold text-stone-600"> &middot; {{ $mine_words }} {{ $mine_words === 1 ? 'word' : 'words' }}@if (($__score['passes'] ?? 0) > 0), {{ $__score['passes'] }} {{ $__score['passes'] === 1 ? 'pass' : 'passes' }}@endif</span></dd></div>
-                                    <div><dt class="text-[11px] font-bold uppercase tracking-wider text-stone-600">Bingos</dt><dd class="mt-0.5 font-bold tabular-nums">{{ $__score['bingos'] ?? 0 }}@if (($__score['adjustment'] ?? 0) !== 0)<span class="font-semibold text-stone-600"> &middot; {{ \App\Support\ScoreRules::signed($__score['adjustment'], true) }} at the end</span>@endif</dd></div>
+                                    <div><dt class="text-[11px] font-bold uppercase tracking-wider text-stone-600">Bingos</dt><dd class="mt-0.5 font-bold tabular-nums">{{ $__score['bingos'] ?? 0 }}</dd></div>
                                 </dl>
+                                @if (($__score['adjustment'] ?? 0) !== 0)
+                                    <p class="mt-3 border-t border-stone-100 pt-3 text-sm text-stone-600">Adjusted at the end of the game <strong class="font-bold tabular-nums text-stone-900">{{ \App\Support\ScoreRules::signed($__score['adjustment'], true) }}</strong></p>
+                                @endif
                             </li>
                         @endforeach
                     </ul>
