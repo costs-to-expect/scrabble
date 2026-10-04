@@ -1,0 +1,13 @@
+/public/hot
+/public/storage
+/storage/*.key
+/vendor
+.env
+.env.backup
+.phpunit.result.cache
+.idea
+.docker/mysql/data
+/.phpunit.cache
+
+# Tailwind standalone CLI binary - platform specific, downloaded by bin/css rather than committed
+/bin/tailwindcss-*
