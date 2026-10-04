@@ -20,7 +20,7 @@ class GamesViewTest extends TestCase
      * A finished game as it is stored: Ada played QUIZ and FAX, passed and gave back 7 for the tiles she was left with
      * (78), Ben played RETAINS for a bingo and ZA (129)
      */
-    private function finishedGame(string $id = 'g-9', array $ada = null, array $ben = null): array
+    private function finishedGame(string $id = 'g-9', ?array $ada = null, ?array $ben = null): array
     {
         $ada ??= [$this->word('QUIZ', 52), $this->word('FAX', 33), $this->pass(), $this->adjustment(-7, 'Tiles left')];
         $ben ??= [$this->word('RETAINS', 68, true), $this->word('ZA', 11)];
