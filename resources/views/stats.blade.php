@@ -117,7 +117,7 @@
             <section class="mt-10" aria-labelledby="players-heading">
                 <h2 id="players-heading" class="text-lg font-extrabold tracking-tight">Players</h2>
 
-                <div class="mt-3 overflow-x-auto rounded-2xl bg-white shadow-card ring-1 ring-stone-200/70 focus-visible:outline-2 focus-visible:outline-brand-600" role="region" aria-label="Players" tabindex="0">
+                <div class="mt-3 overflow-x-auto rounded-2xl bg-white shadow-card ring-1 ring-stone-200/70 focus-visible:outline-2 focus-visible:outline-brand-600" role="region" aria-label="Player statistics" tabindex="0">
                     <table class="w-full min-w-[40rem] text-left text-sm">
                         <thead class="bg-stone-50 text-xs uppercase tracking-wider text-stone-600">
                             <tr>

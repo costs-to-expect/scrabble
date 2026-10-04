@@ -228,24 +228,54 @@
 
     // ---- Copying a link ----------------------------------------------------------------------------------------------
 
-    function copyText(value) {
+    /*
+     * Puts the text on the clipboard and says so only when it is there: the promise resolves once it has been copied and
+     * is rejected when it could not be. The Clipboard API belongs to a secure page (https, or localhost), a copy of the app
+     * on a plain http address has to select a field and ask the browser to copy the selection. `near` is the button that was
+     * pressed, see copyFromField.
+     */
+    function copyText(value, near) {
         if (navigator.clipboard && window.isSecureContext) {
-            return navigator.clipboard.writeText(value);
+            return navigator.clipboard.writeText(value).catch(function () { return copyFromField(value, near); });
         }
 
-        // An http page (a local copy of the app) has no clipboard API, fall back to selecting a hidden field
+        return copyFromField(value, near);
+    }
+
+    /*
+     * The field goes inside the sheet that is open, not on the page behind it. Everything outside a modal <dialog> is inert,
+     * so a field added to the page can't take the focus or be selected, and the browser has nothing to copy. A browser can
+     * still say that it copied (it copied an empty selection), so it only counts when the field really had the focus and
+     * all of its text was selected. The field is not hidden, a field that is not rendered can't be selected, it is a
+     * transparent box and removed in the same breath, and 16px so that iOS does not zoom in on it.
+     */
+    function copyFromField(value, near) {
         return new Promise(function (resolve, reject) {
+            var host = (near && near.closest('dialog')) || document.body;
+            var previous = document.activeElement;
             var field = document.createElement('textarea');
+
             field.value = value;
             field.setAttribute('readonly', '');
-            field.style.position = 'fixed';
-            field.style.opacity = '0';
-            document.body.appendChild(field);
-            field.select();
+            field.setAttribute('aria-hidden', 'true');
+            field.tabIndex = -1;
+            field.style.cssText = 'position:fixed;top:0;left:0;width:2em;height:2em;padding:0;border:0;outline:0;opacity:0;font-size:16px;';
+            host.appendChild(field);
 
             var copied = false;
-            try { copied = document.execCommand('copy'); } catch (error) { copied = false; }
+            try {
+                field.focus({ preventScroll: true });
+                field.select();
+                field.setSelectionRange(0, value.length); // iOS ignores select() on a field
+                copied = document.activeElement === field
+                    && field.selectionStart === 0 && field.selectionEnd === value.length
+                    && document.execCommand('copy');
+            } catch (error) {
+                copied = false;
+            }
+
             field.remove();
+            if (previous && typeof previous.focus === 'function') { previous.focus({ preventScroll: true }); }
 
             if (copied) { resolve(); } else { reject(new Error('Copy is not available')); }
         });
@@ -289,7 +319,7 @@
             var label = element.querySelector('[data-copy-label]');
             var original = label ? label.textContent : '';
 
-            copyText(element.dataset.copy).then(function () {
+            copyText(element.dataset.copy, element).then(function () {
                 if (label) { label.textContent = 'Copied'; }
                 element.classList.add('bg-emerald-50', 'text-emerald-800');
                 setTimeout(function () {
@@ -297,7 +327,7 @@
                     element.classList.remove('bg-emerald-50', 'text-emerald-800');
                 }, 1800);
             }).catch(function () {
-                // Show the link so it can be copied by hand
+                // Not copied, so don't say it was: show the link, ready to be selected and copied by hand
                 window.prompt('Copy this link', element.dataset.copy);
             });
             return;
