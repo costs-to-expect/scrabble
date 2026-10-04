@@ -5,7 +5,7 @@
     <legend class="sr-only">{{ $legend }}</legend>
     <div class="flex flex-wrap gap-2">
         @foreach ($players as $player)
-            <label class="chip has-checked:bg-brand-700 has-checked:text-white has-checked:ring-brand-700 has-checked:hover:bg-brand-800 has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-brand-600">
+            <label class="chip has-checked:bg-brand-700 has-checked:text-white has-checked:ring-brand-700 has-checked:hover:bg-brand-800 has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-brand-600 has-disabled:cursor-not-allowed has-disabled:opacity-40 has-disabled:hover:bg-white">
                 <input type="checkbox" name="{{ $name }}" value="{{ $player['id'] }}" class="peer sr-only" @checked(in_array($player['id'], $picked, true))>
                 <span class="hidden h-7 w-7 shrink-0 items-center justify-center rounded-full bg-white text-brand-700 peer-checked:inline-flex"><x-icon name="check" class="h-4 w-4" stroke-width="3" /></span>
                 <x-avatar :name="$player['name']" :index="$tones[$player['id']] ?? 0" class="h-7 w-7 text-xs peer-checked:hidden" />

@@ -45,13 +45,14 @@ class Complete extends Action
             abort(404, 'Unable to find the game players');
         }
 
+        // A game nobody has scored in has no score sheets, and can still be finished
         $game_score_sheets_response = $api->getGameScoreSheets($resource_type_id, $resource_id, $game_id);
-        if ($game_score_sheets_response['status'] !== 200) {
+        if ($game_score_sheets_response['status'] !== 200 && $game_score_sheets_response['status'] !== 404) {
             abort(404, 'Unable to fetch the game scores');
         }
 
         $sheets = [];
-        foreach ($game_score_sheets_response['content'] as $score_sheet) {
+        foreach ($game_score_sheets_response['status'] === 200 ? $game_score_sheets_response['content'] : [] as $score_sheet) {
             $sheets[$score_sheet['key']] = $score_sheet['value'];
         }
 
