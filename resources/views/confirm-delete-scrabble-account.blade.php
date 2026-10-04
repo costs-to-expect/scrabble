@@ -1,0 +1,26 @@
+<x-layouts.app :title="config('app.game.name').' Game Scorer: Delete Scrabble account'" active="account">
+    <div class="mx-auto max-w-3xl">
+        <h1 class="text-3xl font-extrabold tracking-tight sm:text-4xl">Delete Scrabble account</h1>
+        <p class="mt-2 text-stone-700">We will immediately create a background task to delete your data, the task should start within a minute, once it completes all your Scrabble data will be gone and your session will be deleted.</p>
+        <p class="mt-2 text-stone-700">Please review the tables below to see what will be deleted and what will remain.</p>
+
+        <x-data-table class="mt-6" title="Data that will be deleted" :rows="[
+            ['Scrabble games', 'Your open and finished games, with every turn and word', 'API'],
+            ['Share tokens', 'Public share tokens for open games', 'Scrabble'],
+            ['Game log', 'The logs containing all game actions', 'API'],
+            ['Sessions', 'Session information', 'Scrabble'],
+        ]" />
+
+        <x-data-table class="mt-6" title="Data that will not be deleted" :rows="[
+            ['Account', 'Your Costs to Expect account, one account for all our apps', 'API'],
+            ['Players', 'Players you created, usable across all our game scoring apps', 'API'],
+            ['Other apps', 'You will still have access to all the other Costs to Expect apps and none of your data will be touched', 'API & other Costs to Expect apps'],
+        ]" />
+
+        <form action="{{ route('account.delete-scrabble-account.action') }}" method="POST" class="mt-8 flex flex-col gap-3 sm:flex-row">
+            @csrf
+            <button type="submit" class="btn btn-danger">Confirm delete (cannot be undone)</button>
+            <a href="{{ route('account') }}" class="btn btn-quiet">Cancel</a>
+        </form>
+    </div>
+</x-layouts.app>

@@ -1,0 +1,56 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Casts;
+
+use Illuminate\Contracts\Database\Eloquent\CastsAttributes;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Crypt;
+
+/**
+ * Stores an array as encrypted JSON.
+ *
+ * A share link holds the owner's bearer token, anyone who could read the table could act as the owner,
+ * so the parameters are encrypted with the application key. A value that cannot be decrypted (the key was
+ * changed since it was written, or the row was not written by the app) is an exception, never a guess.
+ *
+ * @implements CastsAttributes<array<string, mixed>, array<string, mixed>|string>
+ */
+class EncryptedParameters implements CastsAttributes
+{
+    /**
+     * @param array<string, mixed> $attributes
+     * @return array<string, mixed>
+     * @throws \Illuminate\Contracts\Encryption\DecryptException
+     * @throws \JsonException
+     */
+    public function get(Model $model, string $key, mixed $value, array $attributes): array
+    {
+        if ($value === null || $value === '') {
+            return [];
+        }
+
+        $decoded = json_decode(Crypt::decryptString($value), true, 512, JSON_THROW_ON_ERROR);
+
+        if (is_array($decoded) === false) {
+            throw new \JsonException('The share token parameters are not a JSON object');
+        }
+
+        return $decoded;
+    }
+
+    /**
+     * @param array<string, mixed> $attributes
+     * @throws \JsonException
+     */
+    public function set(Model $model, string $key, mixed $value, array $attributes): string
+    {
+        if (is_string($value)) {
+            // A JSON string, validate it rather than storing something that cannot be read back
+            $value = json_decode($value, true, 512, JSON_THROW_ON_ERROR);
+        }
+
+        return Crypt::encryptString(json_encode($value, JSON_THROW_ON_ERROR));
+    }
+}
