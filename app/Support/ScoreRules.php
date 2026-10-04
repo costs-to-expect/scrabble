@@ -46,6 +46,31 @@ final class ScoreRules
 
     public const ID_PATTERN = '/^[A-Za-z0-9_-]{8,40}$/';
 
+    /** A turn plays the tiles on the rack, seven of them, all seven is a bingo */
+    public const RACK = 7;
+
+    /**
+     * What a tile is worth in English Scrabble, a blank is worth nothing. The browser scores a word tile by tile with these
+     * (public/js/tiles.js), they are written into the page with the other limits.
+     *
+     * @var array<string, int>
+     */
+    public const TILE_VALUES = [
+        'A' => 1, 'B' => 3, 'C' => 3, 'D' => 2, 'E' => 1, 'F' => 4, 'G' => 2, 'H' => 4, 'I' => 1, 'J' => 8, 'K' => 5, 'L' => 1, 'M' => 3,
+        'N' => 1, 'O' => 1, 'P' => 3, 'Q' => 10, 'R' => 1, 'S' => 1, 'T' => 1, 'U' => 1, 'V' => 4, 'W' => 4, 'X' => 8, 'Y' => 4, 'Z' => 10,
+    ];
+
+    /**
+     * The tiles of a word that was scored tile by tile, stored as text with the turn so the turn opens the same way when it
+     * is changed. Two characters for each letter of the word: what is under the tile (- nothing, d double letter, t triple
+     * letter, D double word, T triple word) then what the tile is (n a new tile, b a new blank, o a tile that was already on
+     * the board, x a blank that was already on the board). A tile that was already there has nothing under it that counts.
+     *
+     * Text, not a list, like every other part of a turn: an API that merges a sheet into the one it has stored replaces a
+     * string whole, it would keep the end of a longer list that had been made shorter.
+     */
+    public const TILES_PATTERN = '/^(?:[-dtDT][nb]|-[ox]){1,15}$/';
+
     /**
      * What a player's sheet looks like before the first turn
      *
@@ -114,7 +139,7 @@ final class ScoreRules
      * Every turn on the sheet, removed ones included, each with every key and the right types whatever the API handed
      * back (a key that went missing, a value that came back as the wrong type)
      *
-     * @return list<array{id: string, kind: string, word: string, score: int, bingo: bool, note: string, at: string, removed: bool}>
+     * @return list<array{id: string, kind: string, word: string, score: int, bingo: bool, note: string, tiles: string, at: string, removed: bool}>
      */
     public static function all(array $sheet): array
     {
@@ -133,7 +158,7 @@ final class ScoreRules
     /**
      * The turns that count, in the order they were played
      *
-     * @return list<array{id: string, kind: string, word: string, score: int, bingo: bool, note: string, at: string, removed: bool}>
+     * @return list<array{id: string, kind: string, word: string, score: int, bingo: bool, note: string, tiles: string, at: string, removed: bool}>
      */
     public static function entries(array $sheet): array
     {
@@ -146,7 +171,7 @@ final class ScoreRules
     /**
      * The most recent turn that counts, null before the first
      *
-     * @return array{id: string, kind: string, word: string, score: int, bingo: bool, note: string, at: string, removed: bool}|null
+     * @return array{id: string, kind: string, word: string, score: int, bingo: bool, note: string, tiles: string, at: string, removed: bool}|null
      */
     public static function last(array $sheet): ?array
     {
@@ -159,7 +184,7 @@ final class ScoreRules
      * One turn with every key and the right types
      *
      * @param array<string, mixed> $turn
-     * @return array{id: string, kind: string, word: string, score: int, bingo: bool, note: string, at: string, removed: bool}
+     * @return array{id: string, kind: string, word: string, score: int, bingo: bool, note: string, tiles: string, at: string, removed: bool}
      */
     public static function turn(array $turn): array
     {
@@ -172,6 +197,7 @@ final class ScoreRules
             'score' => is_int($turn['score'] ?? null) ? $turn['score'] : 0,
             'bingo' => ($turn['bingo'] ?? false) === true,
             'note' => is_string($turn['note'] ?? null) ? $turn['note'] : '',
+            'tiles' => is_string($turn['tiles'] ?? null) ? $turn['tiles'] : '',
             'at' => is_string($turn['at'] ?? null) ? $turn['at'] : '',
             'removed' => ($turn['removed'] ?? false) === true,
         ];
@@ -196,7 +222,7 @@ final class ScoreRules
      */
     public static function same(array $a, array $b): bool
     {
-        foreach (['kind', 'word', 'score', 'bingo', 'note'] as $key) {
+        foreach (['kind', 'word', 'score', 'bingo', 'note', 'tiles'] as $key) {
             if (($a[$key] ?? null) !== ($b[$key] ?? null)) {
                 return false;
             }
@@ -264,6 +290,39 @@ final class ScoreRules
             return 'A word scores between 1 and ' . self::MAX_WORD_SCORE;
         }
 
+        return self::tilesProblem((string) self::word($input['word'] ?? ''), $input['tiles'] ?? '');
+    }
+
+    /**
+     * Why the tiles cannot be stored with this word, null when they can or when there are none. Only the form of the tiles
+     * is checked here: they have to be the tiles of this word and play between one tile and the rack. How the browser
+     * added them up is its business, the score is the one that is stored.
+     */
+    public static function tilesProblem(string $word, mixed $tiles): ?string
+    {
+        if ($tiles === null || $tiles === '') {
+            return null;
+        }
+
+        if (preg_match('/^[A-Z]{1,' . self::MAX_LETTERS . '}$/', $word) !== 1) {
+            return 'Scoring tile by tile is for a word of the letters A to Z';
+        }
+
+        if (is_string($tiles) === false || preg_match(self::TILES_PATTERN, $tiles) !== 1 || strlen($tiles) !== 2 * strlen($word)) {
+            return 'There has to be a tile for each letter of the word';
+        }
+
+        // A tile that was already on the board is o or x, the others are played this turn
+        $played = strlen($tiles) / 2 - substr_count($tiles, 'o') - substr_count($tiles, 'x');
+
+        if ($played < 1) {
+            return 'At least one tile has to be new';
+        }
+
+        if ($played > self::RACK) {
+            return 'A turn plays ' . self::RACK . ' tiles at most';
+        }
+
         return null;
     }
 
@@ -272,7 +331,7 @@ final class ScoreRules
      * so changing a turn from one kind to another never leaves part of the old one behind
      *
      * @param array<string, mixed> $input
-     * @return array{id: string, kind: string, word: string, score: int, bingo: bool, note: string, at: string, removed: bool}
+     * @return array{id: string, kind: string, word: string, score: int, bingo: bool, note: string, tiles: string, at: string, removed: bool}
      */
     public static function fromInput(array $input, string $at): array
     {
@@ -285,6 +344,7 @@ final class ScoreRules
             'score' => $kind === self::PASS ? 0 : (int) self::integer($input['score'] ?? null),
             'bingo' => $kind === self::WORD && self::boolean($input['bingo'] ?? false) === true,
             'note' => $kind === self::ADJUST ? (string) self::note($input['note'] ?? '') : '',
+            'tiles' => $kind === self::WORD ? (string) ($input['tiles'] ?? '') : '',
             'at' => $at,
             'removed' => false,
         ];
@@ -293,7 +353,7 @@ final class ScoreRules
     /**
      * The sheet with a turn added at the end and the totals worked out again
      *
-     * @param array{id: string, kind: string, word: string, score: int, bingo: bool, note: string, at: string, removed: bool} $turn
+     * @param array{id: string, kind: string, word: string, score: int, bingo: bool, note: string, tiles: string, at: string, removed: bool} $turn
      */
     public static function with(array $sheet, array $turn): array
     {
@@ -306,7 +366,7 @@ final class ScoreRules
     /**
      * The sheet with a turn rewritten, it keeps its place, the time it was added and whether it is removed
      *
-     * @param array{id: string, kind: string, word: string, score: int, bingo: bool, note: string, at: string, removed: bool} $turn
+     * @param array{id: string, kind: string, word: string, score: int, bingo: bool, note: string, tiles: string, at: string, removed: bool} $turn
      */
     public static function changed(array $sheet, int $index, array $turn): array
     {
@@ -452,12 +512,14 @@ final class ScoreRules
     /**
      * The limits the browser applies before it asks, they are the server's own, written into the page
      *
-     * @return array{bingo: int, maxWord: int, maxAdjustment: int, maxLetters: int, maxNote: int}
+     * @return array{bingo: int, rack: int, tileValues: array<string, int>, maxWord: int, maxAdjustment: int, maxLetters: int, maxNote: int}
      */
     public static function limits(): array
     {
         return [
             'bingo' => self::BINGO_BONUS,
+            'rack' => self::RACK,
+            'tileValues' => self::TILE_VALUES,
             'maxWord' => self::MAX_WORD_SCORE,
             'maxAdjustment' => self::MAX_ADJUSTMENT,
             'maxLetters' => self::MAX_LETTERS,

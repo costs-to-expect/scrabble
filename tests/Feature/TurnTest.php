@@ -153,7 +153,7 @@ class TurnTest extends TestCase
                 'sheet' => [
                     'turns' => [
                         $this->stored('turn-0001', 'FAX', 33),
-                        ['id' => 'turn-0002', 'kind' => 'word', 'word' => 'QUIZ', 'score' => 52, 'bingo' => false, 'note' => '', 'at' => self::AT, 'removed' => false],
+                        ['id' => 'turn-0002', 'kind' => 'word', 'word' => 'QUIZ', 'score' => 52, 'bingo' => false, 'note' => '', 'tiles' => '', 'at' => self::AT, 'removed' => false],
                     ],
                     'score' => ['total' => 85, 'turns' => 2, 'words' => 2, 'bingos' => 0, 'best' => 52, 'lowest' => 33],
                 ],
@@ -189,7 +189,7 @@ class TurnTest extends TestCase
             ->assertJsonPath('sheet.score.total', 33)
             ->assertJsonPath('sheet.score.turns', 2)
             ->assertJsonPath('sheet.score.words', 1)
-            ->assertJsonPath('sheet.turns.1', ['id' => 'turn-0002', 'kind' => 'pass', 'word' => '', 'score' => 0, 'bingo' => false, 'note' => '', 'at' => self::AT, 'removed' => false]);
+            ->assertJsonPath('sheet.turns.1', ['id' => 'turn-0002', 'kind' => 'pass', 'word' => '', 'score' => 0, 'bingo' => false, 'note' => '', 'tiles' => '', 'at' => self::AT, 'removed' => false]);
     }
 
     #[DataProvider('modes')]
@@ -352,7 +352,7 @@ class TurnTest extends TestCase
 
         $this->send('change', ['id' => 'turn-0001', 'kind' => 'pass'], $public)
             ->assertOk()
-            ->assertJsonPath('sheet.turns.0', ['id' => 'turn-0001', 'kind' => 'pass', 'word' => '', 'score' => 0, 'bingo' => false, 'note' => '', 'at' => self::AT, 'removed' => false])
+            ->assertJsonPath('sheet.turns.0', ['id' => 'turn-0001', 'kind' => 'pass', 'word' => '', 'score' => 0, 'bingo' => false, 'note' => '', 'tiles' => '', 'at' => self::AT, 'removed' => false])
             ->assertJsonPath('sheet.score', ['total' => 0, 'turns' => 1, 'words' => 0, 'bingos' => 0, 'best' => null, 'lowest' => null]);
     }
 
@@ -815,6 +815,140 @@ class TurnTest extends TestCase
             ->assertExactJson(['message' => 'Failed to update your score sheet']);
     }
 
+    // Scoring a word tile by tile: the browser adds up the tiles, the turn is stored with the score it came to and the
+    // tiles it was made from, so it opens the same way when it is changed
+
+    #[DataProvider('modes')]
+    public function test_a_word_scored_tile_by_tile_is_stored_with_its_tiles(bool $public): void
+    {
+        $this->fakeScoring($this->scoreSheet([$this->stored('turn-0001', 'FAX', 33)]));
+
+        // Q on a triple letter and Z on a double word: (30 + 1 + 1 + 10) * 2
+        $this->send('add', $this->turnOf('turn-0002', ['score' => 84, 'tiles' => 'tn-n-nDn']), $public)
+            ->assertOk()
+            ->assertJsonPath('sheet.turns.1.tiles', 'tn-n-nDn')
+            ->assertJsonPath('sheet.turns.1.score', 84)
+            ->assertJsonPath('sheet.score.total', 117);
+
+        self::assertSame('tn-n-nDn', $this->savedSheet()['turns'][1]['tiles']);
+    }
+
+    #[DataProvider('modes')]
+    public function test_a_bingo_of_seven_new_tiles_is_fifty_points_on_top_as_it_is_for_a_typed_score(bool $public): void
+    {
+        $this->fakeScoring($this->scoreSheet());
+
+        $this->send('add', $this->turnOf('turn-0001', ['word' => 'RETAINS', 'score' => 14, 'bingo' => true, 'tiles' => '-n-n-n-n-n-nDn']), $public)
+            ->assertOk()
+            ->assertJsonPath('sheet.score', ['total' => 64, 'turns' => 1, 'words' => 1, 'bingos' => 1, 'best' => 64, 'lowest' => 64]);
+    }
+
+    #[DataProvider('modes')]
+    public function test_a_turn_that_was_typed_in_has_no_tiles(bool $public): void
+    {
+        $this->fakeScoring($this->scoreSheet());
+
+        $this->send('add', $this->turnOf('turn-0001'), $public)
+            ->assertOk()
+            ->assertJsonPath('sheet.turns.0.tiles', '');
+    }
+
+    /**
+     * @return array<string, array{array<string, mixed>, string}>
+     */
+    public static function tilesThatAreRefused(): array
+    {
+        return [
+            'a tile too few' => [['tiles' => '-n-n-n'], 'There has to be a tile for each letter of the word'],
+            'a tile too many' => [['tiles' => '-n-n-n-n-n'], 'There has to be a tile for each letter of the word'],
+            'something that is not a tile' => [['tiles' => 'tn-n-nDz'], 'There has to be a tile for each letter of the word'],
+            'tiles that are a list' => [['tiles' => ['tn', '-n', '-n', 'Dn']], 'There has to be a tile for each letter of the word'],
+            'every tile already on the board' => [['tiles' => '-o-o-o-o'], 'At least one tile has to be new'],
+            'tiles for a word with accents' => [['word' => 'Zoë', 'tiles' => 'tn-n-n'], 'Scoring tile by tile is for a word of the letters A to Z'],
+            'tiles for a word with no letters' => [['word' => '', 'tiles' => 'tn'], 'Scoring tile by tile is for a word of the letters A to Z'],
+            'more tiles than the rack holds' => [['word' => 'ABCDEFGH', 'tiles' => '-n-n-n-n-n-n-n-n'], 'A turn plays 7 tiles at most'],
+        ];
+    }
+
+    #[DataProvider('tilesThatAreRefused')]
+    public function test_tiles_that_are_not_the_tiles_of_the_word_are_refused_and_nothing_is_saved(array $changes, string $message): void
+    {
+        $this->fakeScoring($this->scoreSheet([$this->stored('turn-0000', 'FAX', 33)]));
+
+        foreach ([false, true] as $public) {
+            $this->send('add', $changes + $this->turnOf('turn-0001', ['score' => 84, 'tiles' => 'tn-n-nDn']), $public)
+                ->assertStatus(422)
+                ->assertJsonPath('message', $message);
+        }
+
+        $this->assertNothingSaved();
+    }
+
+    #[DataProvider('modes')]
+    public function test_the_tiles_of_a_turn_can_be_changed_and_are_replaced_whole(bool $public): void
+    {
+        $this->fakeScoring($this->scoreSheet([$this->word('QUIZ', 84, false, 'turn-0001', false, 'tn-n-nDn')]));
+
+        // The Z was not on a double word after all, the Q was a blank: 0 + 1 + 1 + 10
+        $this->send('change', $this->turnOf('turn-0001', ['score' => 12, 'tiles' => '-b-n-n-n']), $public)
+            ->assertOk()
+            ->assertJsonPath('sheet.turns.0.tiles', '-b-n-n-n')
+            ->assertJsonPath('sheet.turns.0.score', 12);
+
+        self::assertSame('-b-n-n-n', $this->savedSheet()['turns'][0]['tiles']);
+    }
+
+    #[DataProvider('modes')]
+    public function test_a_turn_changed_to_a_typed_score_loses_its_tiles(bool $public): void
+    {
+        $this->fakeScoring($this->scoreSheet([$this->word('QUIZ', 84, false, 'turn-0001', false, 'tn-n-nDn')]));
+
+        $this->send('change', $this->turnOf('turn-0001', ['score' => 90]), $public)
+            ->assertOk()
+            ->assertJsonPath('sheet.turns.0.tiles', '')
+            ->assertJsonPath('sheet.turns.0.score', 90);
+    }
+
+    #[DataProvider('modes')]
+    public function test_a_turn_changed_to_a_pass_keeps_nothing_of_its_tiles(bool $public): void
+    {
+        $this->fakeScoring($this->scoreSheet([$this->word('QUIZ', 84, false, 'turn-0001', false, 'tn-n-nDn')]));
+
+        $this->send('change', ['id' => 'turn-0001', 'kind' => 'pass', 'tiles' => 'tn-n-nDn'], $public)
+            ->assertOk()
+            ->assertJsonPath('sheet.turns.0.tiles', '')
+            ->assertJsonPath('sheet.turns.0.word', '');
+    }
+
+    #[DataProvider('modes')]
+    public function test_a_turn_with_tiles_that_is_sent_again_is_not_scored_twice_and_other_tiles_are_a_conflict(bool $public): void
+    {
+        $this->fakeScoring($this->scoreSheet([$this->word('QUIZ', 84, false, 'turn-0001', false, 'tn-n-nDn')]));
+
+        $this->send('add', $this->turnOf('turn-0001', ['score' => 84, 'tiles' => 'tn-n-nDn']), $public)
+            ->assertOk()
+            ->assertJsonPath('message', 'Turn saved');
+        $this->assertNothingSaved();
+
+        $this->send('add', $this->turnOf('turn-0001', ['score' => 84, 'tiles' => 'dn-n-nDn']), $public)
+            ->assertStatus(409)
+            ->assertJsonPath('sheet.turns.0.tiles', 'tn-n-nDn');
+        $this->assertNothingSaved();
+    }
+
+    public function test_the_tiles_of_every_turn_are_a_text_so_a_merging_api_keeps_nothing_of_a_longer_word(): void
+    {
+        // An API that merges the sheet it is sent into the one it has stored keeps the end of a list that got shorter, it
+        // replaces a string whole. A seven letter word that becomes a four letter word must not keep three old tiles.
+        $this->fakeScoring($this->scoreSheet([$this->word('RETAINS', 14, true, 'turn-0001', false, '-n-n-n-n-n-nDn')]));
+
+        $this->send('change', $this->turnOf('turn-0001', ['score' => 84, 'tiles' => 'tn-n-nDn']), false)->assertOk();
+
+        $saved = $this->savedSheet()['turns'][0];
+        self::assertIsString($saved['tiles']);
+        self::assertSame('tn-n-nDn', $saved['tiles']);
+    }
+
     #[DataProvider('modes')]
     public function test_a_sheet_the_api_stores_badly_is_read_as_far_as_it_can_be(bool $public): void
     {
@@ -830,7 +964,7 @@ class TurnTest extends TestCase
         $this->send('add', $this->turnOf('turn-0003', ['word' => 'FAX', 'score' => 33]), $public)
             ->assertOk()
             ->assertJsonCount(3, 'sheet.turns')
-            ->assertJsonPath('sheet.turns.0', ['id' => 'turn-0001', 'kind' => 'word', 'word' => 'QUIZ', 'score' => 52, 'bingo' => false, 'note' => '', 'at' => '', 'removed' => false])
+            ->assertJsonPath('sheet.turns.0', ['id' => 'turn-0001', 'kind' => 'word', 'word' => 'QUIZ', 'score' => 52, 'bingo' => false, 'note' => '', 'tiles' => '', 'at' => '', 'removed' => false])
             // A score that is not a number is nothing, a bingo that is not true is not one
             ->assertJsonPath('sheet.turns.1.score', 0)
             ->assertJsonPath('sheet.turns.1.bingo', false)

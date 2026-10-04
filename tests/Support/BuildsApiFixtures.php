@@ -22,9 +22,9 @@ trait BuildsApiFixtures
     }
 
     /**
-     * A word, as it is stored on a score sheet
+     * A word, as it is stored on a score sheet, with its tiles when it was scored tile by tile
      */
-    protected function word(string $word, int $score, bool $bingo = false, ?string $id = null, bool $removed = false): array
+    protected function word(string $word, int $score, bool $bingo = false, ?string $id = null, bool $removed = false, string $tiles = ''): array
     {
         return [
             'id' => $id ?? $this->nextTurnId(),
@@ -33,6 +33,7 @@ trait BuildsApiFixtures
             'score' => $score,
             'bingo' => $bingo,
             'note' => '',
+            'tiles' => $tiles,
             'at' => '2026-10-04T19:30:00Z',
             'removed' => $removed,
         ];
@@ -40,12 +41,12 @@ trait BuildsApiFixtures
 
     protected function pass(?string $id = null): array
     {
-        return ['id' => $id ?? $this->nextTurnId(), 'kind' => 'pass', 'word' => '', 'score' => 0, 'bingo' => false, 'note' => '', 'at' => '2026-10-04T19:30:00Z', 'removed' => false];
+        return ['id' => $id ?? $this->nextTurnId(), 'kind' => 'pass', 'word' => '', 'score' => 0, 'bingo' => false, 'note' => '', 'tiles' => '', 'at' => '2026-10-04T19:30:00Z', 'removed' => false];
     }
 
     protected function adjustment(int $score, string $note = '', ?string $id = null): array
     {
-        return ['id' => $id ?? $this->nextTurnId(), 'kind' => 'adjust', 'word' => '', 'score' => $score, 'bingo' => false, 'note' => $note, 'at' => '2026-10-04T19:30:00Z', 'removed' => false];
+        return ['id' => $id ?? $this->nextTurnId(), 'kind' => 'adjust', 'word' => '', 'score' => $score, 'bingo' => false, 'note' => $note, 'tiles' => '', 'at' => '2026-10-04T19:30:00Z', 'removed' => false];
     }
 
     /**

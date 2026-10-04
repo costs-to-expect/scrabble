@@ -11,7 +11,9 @@ Game scoring for Scrabble, powered by the Costs to Expect API.
 ![Score sheet](/resources/art/score-sheet.png)
 
 Keep the score of a game of Scrabble for two to four players from one screen. A turn is a word and what it scored,
-the 50 point bingo for playing all seven tiles is a tap, and a pass or a tile swap is a turn that scores nothing. At the
+the 50 point bingo for playing all seven tiles is a tap, and a pass or a tile swap is a turn that scores nothing. Or switch
+on **Tile by tile** and let the app do the adding: type the word, say what each tile sits on (a double or triple letter or
+word), which are blanks and which were already on the board, and the score adds itself up, which children like. At the
 end of the game an adjustment takes the tiles left on each rack off that player's score, and adds them for whoever went
 out. Everyone's turns are on the same screen, so the person with the phone can keep the whole game, and if the players
 want to, each of them has a link to add their own words on their own phone.
@@ -94,6 +96,11 @@ use, including a throwaway application key, so they need no `.env`.
 GitHub Actions runs them on PHP 8.2, 8.3, 8.4 and 8.5 for every push and pull request, see 
 `.github/workflows/tests.yml`. 8.2 is the version the app runs on, the others are the versions it is moving to.
 
+The tiles of a word are added up in the browser, `public/js/tiles.js`, which PHPUnit cannot call. `TileScoringTest` runs
+the script under Node against scores worked out by hand and checks that it reads the stored tiles the way
+`ScoreRules::TILES_PATTERN` does. Node is on a GitHub Actions runner, the test is skipped where it is not installed (the
+app image has none), nothing else needs it.
+
 ## Frontend assets
 
 CSS is compiled with the standalone Tailwind CLI, there is no Node or yarn involved.
@@ -112,8 +119,8 @@ Every page is built from the Blade layouts and components in `resources/views/co
 sprite, the avatar, the sheet, the fields and alerts, the player tiles), the classes the pages share (buttons, cards,
 form controls) are in `resources/css/app.css`, and the scripts are plain JavaScript, no build step: `public/js/ui.js` is
 on every page (sheets, the snackbar, confetti, copy a link), `public/js/turn-entry.js` is the sheet a turn is entered
-in, `public/js/score-sheet.js` draws the game screen and `public/js/landing.js` is the score sheet to try and the
-walkthrough on the landing page. Only the places listed in `resources/css/app.css` are scanned for classes, add a path
+in, `public/js/tiles.js` adds up a word tile by tile, `public/js/score-sheet.js` draws the game screen and
+`public/js/landing.js` is the score sheet to try and the walkthrough on the landing page. Only the places listed in `resources/css/app.css` are scanned for classes, add a path
 there if classes are ever built somewhere new. The reasoning behind the look, the colours and the typeface is in
 [design](design/README.md).
 
@@ -128,7 +135,7 @@ A score sheet is stored in the API as the whole sheet, a player's turns in the o
 ```json
 {
   "turns": [
-    {"id": "t9c41f07ab2e6d35812", "kind": "word", "word": "QUIZ", "score": 52, "bingo": false, "note": "", "at": "2026-10-04T19:30:00Z", "removed": false}
+    {"id": "t9c41f07ab2e6d35812", "kind": "word", "word": "QUIZ", "score": 52, "bingo": false, "note": "", "tiles": "", "at": "2026-10-04T19:30:00Z", "removed": false}
   ],
   "score": {"total": 52, "turns": 1, "words": 1, "bingos": 0, "best": 52, "lowest": 52}
 }
@@ -149,6 +156,28 @@ lock every turn once it has been saved, the server then refuses to change or rem
 
 A turn has an id the browser makes up, so a save that is sent twice (the answer got lost and the browser tries again)
 is only ever scored once, and a turn id that has been used for something else is refused rather than overwritten.
+
+## Scoring a word, two ways
+
+The switch beside the close button of the entry sheet chooses how a word is scored, the choice is remembered on the device.
+
+**Quick** is the number pad: the word is optional, the score is what you type, the 50 point bingo is a toggle.
+
+**Tile by tile** is for people who want the app to do the adding. The word is typed (the letters A to Z, the English tile
+values are written into the page from `ScoreRules::TILE_VALUES`) and every letter becomes a tile. Tap a tile to say what is
+under it (nothing, a double or triple letter, a double or triple word), whether it is a blank (worth nothing) and whether it
+was already on the board (it counts for what it is worth, and what is under it does not). The tiles are added up, a double
+or triple word multiplies the lot (two of them multiply each other), the points of any other words the tiles made can be
+added, and seven new tiles are a bingo, the 50 points need no tap. The score and the bingo are stored as they are for a
+turn that was typed in, so nothing else in the app, the stats included, knows or cares how a score was made.
+
+The tiles are stored with the turn, so that changing it opens the same way. They are text, two characters for each letter,
+**what is under the tile** (`-` nothing, `d` double letter, `t` triple letter, `D` double word, `T` triple word) then **what
+the tile is** (`n` a new tile, `b` a new blank, `o` already on the board, `x` a blank that was already on the board):
+`QUIZ` with the Q on a triple letter and the Z on a double word is `tn-n-nDn`, worth `(30 + 1 + 1 + 10) x 2 = 84`. Text, and
+not a list, for the same reason nothing is ever taken out of a sheet: an API that merges the sheet it is sent into the one it
+has stored replaces a string whole, and would keep the end of a longer list that had been made shorter. The server checks that
+the tiles are the tiles of the word, and that a turn plays between one tile and seven, it does not add them up again.
 
 ## Always read live
 

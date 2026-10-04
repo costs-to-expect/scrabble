@@ -63,7 +63,7 @@
             var best = words().reduce(function (best, turn) { return best === null || points(turn) > points(best) ? turn : best; }, null);
 
             return turns.length === sample.length
-                ? 'Tap Add a turn, type a word and what it scored. Played all seven tiles? Try the bingo.'
+                ? 'Tap Add a turn, type a word and what it scored. Played all seven tiles? Try the bingo. Or switch on Tile by tile and let it do the adding.'
                 : 'Highest word so far: ' + (best.word !== '' ? best.word + ', ' : '') + points(best) + ' points. Can you beat it?';
         }
 

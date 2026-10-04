@@ -13,9 +13,9 @@ class ScoreRulesTest extends TestCase
     /**
      * A stored turn, every key there
      */
-    private function turn(string $id, string $kind = 'word', string $word = '', int $score = 0, bool $bingo = false, string $note = '', bool $removed = false): array
+    private function turn(string $id, string $kind = 'word', string $word = '', int $score = 0, bool $bingo = false, string $note = '', bool $removed = false, string $tiles = ''): array
     {
-        return ['id' => $id, 'kind' => $kind, 'word' => $word, 'score' => $score, 'bingo' => $bingo, 'note' => $note, 'at' => '2026-10-04T19:30:00Z', 'removed' => $removed];
+        return ['id' => $id, 'kind' => $kind, 'word' => $word, 'score' => $score, 'bingo' => $bingo, 'note' => $note, 'tiles' => $tiles, 'at' => '2026-10-04T19:30:00Z', 'removed' => $removed];
     }
 
     private function sheet(array ...$turns): array
@@ -109,14 +109,14 @@ class ScoreRulesTest extends TestCase
 
         self::assertCount(3, $turns);
         self::assertSame(
-            ['id' => 'turn-0001', 'kind' => 'word', 'word' => 'AX', 'score' => 12, 'bingo' => false, 'note' => '', 'at' => '', 'removed' => false],
+            ['id' => 'turn-0001', 'kind' => 'word', 'word' => 'AX', 'score' => 12, 'bingo' => false, 'note' => '', 'tiles' => '', 'at' => '', 'removed' => false],
             $turns[0]
         );
         self::assertSame(
-            ['id' => 'turn-0002', 'kind' => 'word', 'word' => '', 'score' => 0, 'bingo' => false, 'note' => '', 'at' => '', 'removed' => false],
+            ['id' => 'turn-0002', 'kind' => 'word', 'word' => '', 'score' => 0, 'bingo' => false, 'note' => '', 'tiles' => '', 'at' => '', 'removed' => false],
             $turns[1]
         );
-        self::assertSame(['id' => '', 'kind' => 'pass', 'word' => '', 'score' => 0, 'bingo' => false, 'note' => '', 'at' => '', 'removed' => false], $turns[2]);
+        self::assertSame(['id' => '', 'kind' => 'pass', 'word' => '', 'score' => 0, 'bingo' => false, 'note' => '', 'tiles' => '', 'at' => '', 'removed' => false], $turns[2]);
         self::assertSame([], ScoreRules::all(['turns' => 'broken']));
         self::assertSame(12, ScoreRules::totals($sheet)['total']);
     }
@@ -217,7 +217,7 @@ class ScoreRulesTest extends TestCase
         );
 
         self::assertSame(
-            ['id' => 'turn-0001', 'kind' => 'word', 'word' => 'QUIZ', 'score' => 52, 'bingo' => true, 'note' => '', 'at' => '2026-10-04T19:30:00Z', 'removed' => false],
+            ['id' => 'turn-0001', 'kind' => 'word', 'word' => 'QUIZ', 'score' => 52, 'bingo' => true, 'note' => '', 'tiles' => '', 'at' => '2026-10-04T19:30:00Z', 'removed' => false],
             $turn
         );
     }
@@ -227,7 +227,7 @@ class ScoreRulesTest extends TestCase
         $turn = ScoreRules::fromInput(['id' => 'turn-0001', 'kind' => 'pass', 'word' => 'QUIZ', 'score' => 0, 'note' => 'x'], '2026-10-04T19:30:00Z');
 
         self::assertSame(
-            ['id' => 'turn-0001', 'kind' => 'pass', 'word' => '', 'score' => 0, 'bingo' => false, 'note' => '', 'at' => '2026-10-04T19:30:00Z', 'removed' => false],
+            ['id' => 'turn-0001', 'kind' => 'pass', 'word' => '', 'score' => 0, 'bingo' => false, 'note' => '', 'tiles' => '', 'at' => '2026-10-04T19:30:00Z', 'removed' => false],
             $turn
         );
     }
@@ -237,7 +237,7 @@ class ScoreRulesTest extends TestCase
         $turn = ScoreRules::fromInput(['id' => 'turn-0001', 'kind' => 'adjust', 'word' => 'QUIZ', 'score' => '-7', 'note' => '  Tiles   left '], '2026-10-04T19:30:00Z');
 
         self::assertSame(
-            ['id' => 'turn-0001', 'kind' => 'adjust', 'word' => '', 'score' => -7, 'bingo' => false, 'note' => 'Tiles   left', 'at' => '2026-10-04T19:30:00Z', 'removed' => false],
+            ['id' => 'turn-0001', 'kind' => 'adjust', 'word' => '', 'score' => -7, 'bingo' => false, 'note' => 'Tiles   left', 'tiles' => '', 'at' => '2026-10-04T19:30:00Z', 'removed' => false],
             $turn
         );
     }
@@ -287,7 +287,7 @@ class ScoreRulesTest extends TestCase
         $updated = ScoreRules::changed($sheet, 0, ScoreRules::fromInput(['id' => 'turn-0001', 'kind' => 'pass'], '2026-10-04T19:40:00Z'));
 
         self::assertSame(
-            ['id' => 'turn-0001', 'kind' => 'pass', 'word' => '', 'score' => 0, 'bingo' => false, 'note' => '', 'at' => '2026-10-04T19:30:00Z', 'removed' => false],
+            ['id' => 'turn-0001', 'kind' => 'pass', 'word' => '', 'score' => 0, 'bingo' => false, 'note' => '', 'tiles' => '', 'at' => '2026-10-04T19:30:00Z', 'removed' => false],
             $updated['turns'][0]
         );
         self::assertSame(0, $updated['score']['total']);
@@ -313,7 +313,7 @@ class ScoreRulesTest extends TestCase
     public function test_every_turn_on_a_sheet_is_always_written_with_the_same_keys(): void
     {
         $sheet = ScoreRules::with(ScoreRules::emptySheet(), ['id' => 'turn-0001', 'kind' => 'pass']);
-        $keys = ['id', 'kind', 'word', 'score', 'bingo', 'note', 'at', 'removed'];
+        $keys = ['id', 'kind', 'word', 'score', 'bingo', 'note', 'tiles', 'at', 'removed'];
 
         self::assertSame($keys, array_keys($sheet['turns'][0]));
         self::assertSame($keys, array_keys(ScoreRules::changed($sheet, 0, ['id' => 'turn-0001', 'kind' => 'word', 'word' => 'AX', 'score' => 9])['turns'][0]));
@@ -435,10 +435,164 @@ class ScoreRulesTest extends TestCase
         self::assertSame("\u{2212}7", ScoreRules::signed(-7, true));
     }
 
+    // The tiles of a word that was scored tile by tile
+
+    public function test_every_letter_has_the_value_of_its_english_tile(): void
+    {
+        self::assertSame(range('A', 'Z'), array_keys(ScoreRules::TILE_VALUES));
+
+        // The hundred English tiles (the blanks are worth nothing) are worth 187 points between them
+        $tiles = ['A' => 9, 'B' => 2, 'C' => 2, 'D' => 4, 'E' => 12, 'F' => 2, 'G' => 3, 'H' => 2, 'I' => 9, 'J' => 1, 'K' => 1, 'L' => 4, 'M' => 2,
+            'N' => 6, 'O' => 8, 'P' => 2, 'Q' => 1, 'R' => 6, 'S' => 4, 'T' => 6, 'U' => 4, 'V' => 2, 'W' => 2, 'X' => 1, 'Y' => 2, 'Z' => 1];
+        $total = 0;
+        foreach ($tiles as $letter => $count) {
+            $total += $count * ScoreRules::TILE_VALUES[$letter];
+        }
+
+        self::assertSame(98, array_sum($tiles));
+        self::assertSame(187, $total);
+
+        $worth = array_unique(array_values(ScoreRules::TILE_VALUES));
+        sort($worth);
+        self::assertSame([1, 2, 3, 4, 5, 8, 10], $worth);
+    }
+
+    /**
+     * @return array<string, array{0: string, 1: string}> the word and its tiles
+     */
+    public static function validTiles(): array
+    {
+        return [
+            'a double letter and a double word' => ['QUIZ', 'tn-n-nDn'],
+            'all seven tiles for a bingo' => ['RETAINS', '-n-n-n-n-n-n-n'],
+            'a blank' => ['QUIZ', '-b-n-n-n'],
+            'two tiles that were already on the board' => ['QUIZ', '-n-o-oDn'],
+            'a blank that was already on the board' => ['AX', '-x-n'],
+            'one new tile and the rest on the board' => ['QUIZ', '-o-o-o-n'],
+            'a double and a triple word' => ['ZA', 'Dn' . 'Tn'],
+            'the longest word, seven tiles from the rack' => ['ABCDEFGHIJKLMNO', str_repeat('-n', 7) . str_repeat('-o', 8)],
+        ];
+    }
+
+    #[DataProvider('validTiles')]
+    public function test_the_tiles_of_the_word_are_accepted(string $word, string $tiles): void
+    {
+        self::assertNull(ScoreRules::tilesProblem($word, $tiles));
+        self::assertNull(ScoreRules::problem(['id' => 'turn-0001', 'kind' => 'word', 'word' => $word, 'score' => 52, 'tiles' => $tiles]));
+    }
+
+    /**
+     * @return array<string, array{0: string, 1: mixed, 2: string}> the word, its tiles and what is said
+     */
+    public static function invalidTiles(): array
+    {
+        $letters = 'Scoring tile by tile is for a word of the letters A to Z';
+        $match = 'There has to be a tile for each letter of the word';
+
+        return [
+            'a word with accents' => ['ZOË', 'tn-n-n', $letters],
+            'no word at all' => ['', 'tn', $letters],
+            'a word that is too long' => ['ABCDEFGHIJKLMNOP', str_repeat('-n', 16), $letters],
+            'a tile too few' => ['QUIZ', '-n-n-n', $match],
+            'a tile too many' => ['QUIZ', '-n-n-n-n-n', $match],
+            'an odd number of characters' => ['QUIZ', '-n-n-n-', $match],
+            'something that is not a square' => ['QUIZ', 'xn-n-n-n', $match],
+            'something that is not a tile' => ['QUIZ', '-q-n-n-n', $match],
+            'a square under a tile that was already on the board' => ['QUIZ', 'to-n-n-n', $match],
+            'tiles that are not text' => ['QUIZ', ['-n', '-n', '-n', '-n'], $match],
+            'a number' => ['QUIZ', 12345678, $match],
+            'tiles with spaces' => ['QUIZ', '-n -n -n -n', $match],
+            'every tile already on the board' => ['QUIZ', '-o-o-o-x', 'At least one tile has to be new'],
+            'more tiles than the rack holds' => ['ABCDEFGH', str_repeat('-n', 8), 'A turn plays 7 tiles at most'],
+        ];
+    }
+
+    #[DataProvider('invalidTiles')]
+    public function test_tiles_that_are_not_the_tiles_of_the_word_say_why(string $word, mixed $tiles, string $problem): void
+    {
+        self::assertSame($problem, ScoreRules::tilesProblem($word, $tiles));
+    }
+
+    public function test_a_turn_with_tiles_that_are_not_its_own_is_refused_with_the_reason(): void
+    {
+        self::assertSame(
+            'There has to be a tile for each letter of the word',
+            ScoreRules::problem(['id' => 'turn-0001', 'kind' => 'word', 'word' => 'QUIZ', 'score' => 52, 'tiles' => '-n-n-n'])
+        );
+        self::assertSame(
+            'At least one tile has to be new',
+            ScoreRules::problem(['id' => 'turn-0001', 'kind' => 'word', 'word' => 'QUIZ', 'score' => 52, 'tiles' => '-o-o-o-o'])
+        );
+    }
+
+    public function test_no_tiles_is_a_turn_that_was_typed_in(): void
+    {
+        foreach ([null, ''] as $tiles) {
+            self::assertNull(ScoreRules::tilesProblem('QUIZ', $tiles));
+        }
+
+        self::assertNull(ScoreRules::problem(['id' => 'turn-0001', 'kind' => 'word', 'word' => 'QUIZ', 'score' => 52]));
+        self::assertNull(ScoreRules::problem(['id' => 'turn-0001', 'kind' => 'word', 'word' => 'QUIZ', 'score' => 52, 'tiles' => null]));
+    }
+
+    public function test_the_score_is_checked_before_the_tiles(): void
+    {
+        self::assertSame(
+            'A word scores between 1 and 999',
+            ScoreRules::problem(['id' => 'turn-0001', 'kind' => 'word', 'word' => 'QUIZ', 'score' => 0, 'tiles' => 'nonsense'])
+        );
+    }
+
+    public function test_the_tiles_are_stored_with_a_word_and_with_nothing_else(): void
+    {
+        $word = ScoreRules::fromInput(['id' => 'turn-0001', 'kind' => 'word', 'word' => 'quiz', 'score' => 84, 'tiles' => 'tn-n-nDn'], '2026-10-04T19:30:00Z');
+        self::assertSame($this->turn('turn-0001', 'word', 'QUIZ', 84, false, '', false, 'tn-n-nDn'), $word);
+
+        $typed = ScoreRules::fromInput(['id' => 'turn-0001', 'kind' => 'word', 'word' => 'quiz', 'score' => 84], '2026-10-04T19:30:00Z');
+        self::assertSame('', $typed['tiles']);
+
+        // A pass or an adjustment has no tiles, whatever was sent with it
+        $pass = ScoreRules::fromInput(['id' => 'turn-0001', 'kind' => 'pass', 'tiles' => 'tn-n-nDn'], '2026-10-04T19:30:00Z');
+        $adjustment = ScoreRules::fromInput(['id' => 'turn-0001', 'kind' => 'adjust', 'score' => -7, 'tiles' => 'tn-n-nDn'], '2026-10-04T19:30:00Z');
+        self::assertSame('', $pass['tiles']);
+        self::assertSame('', $adjustment['tiles']);
+    }
+
+    public function test_a_turn_is_always_read_with_its_tiles_as_text(): void
+    {
+        $turns = ScoreRules::all(['turns' => [
+            ['id' => 'turn-0001', 'kind' => 'word', 'word' => 'QUIZ', 'score' => 84, 'tiles' => 'tn-n-nDn'],
+            ['id' => 'turn-0002', 'kind' => 'word', 'word' => 'AX', 'score' => 9],
+            ['id' => 'turn-0003', 'kind' => 'word', 'word' => 'AX', 'score' => 9, 'tiles' => ['-n', '-n']],
+        ]]);
+
+        self::assertSame(['tn-n-nDn', '', ''], array_column($turns, 'tiles'));
+    }
+
+    public function test_the_same_words_with_different_tiles_are_not_the_same_play(): void
+    {
+        $a = $this->turn('turn-0001', 'word', 'QUIZ', 84, false, '', false, 'tn-n-nDn');
+
+        self::assertTrue(ScoreRules::same($a, ['at' => 'later', 'removed' => true] + $a));
+        self::assertFalse(ScoreRules::same($a, ['tiles' => 'dn-n-nDn'] + $a));
+        self::assertFalse(ScoreRules::same($a, ['tiles' => ''] + $a));
+    }
+
+    public function test_changing_the_tiles_of_a_turn_keeps_its_place_and_when_it_was_played(): void
+    {
+        $sheet = $this->sheet($this->turn('turn-0001', 'word', 'QUIZ', 52, false, '', false, 'tn-n-nDn'), $this->turn('turn-0002', 'word', 'FAX', 33));
+
+        $changed = ScoreRules::changed($sheet, 0, ScoreRules::fromInput(['id' => 'turn-0001', 'kind' => 'word', 'word' => 'QUIZ', 'score' => 52], '2030-01-01T00:00:00Z'));
+
+        self::assertSame('', $changed['turns'][0]['tiles']);
+        self::assertSame('2026-10-04T19:30:00Z', $changed['turns'][0]['at']);
+        self::assertSame(['turn-0001', 'turn-0002'], array_column($changed['turns'], 'id'));
+    }
+
     public function test_the_limits_for_the_browser_are_the_servers_own(): void
     {
         self::assertSame(
-            ['bingo' => 50, 'maxWord' => 999, 'maxAdjustment' => 999, 'maxLetters' => 15, 'maxNote' => 30],
+            ['bingo' => 50, 'rack' => 7, 'tileValues' => ScoreRules::TILE_VALUES, 'maxWord' => 999, 'maxAdjustment' => 999, 'maxLetters' => 15, 'maxNote' => 30],
             ScoreRules::limits()
         );
     }

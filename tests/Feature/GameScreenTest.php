@@ -145,7 +145,7 @@ class GameScreenTest extends TestCase
         $config = $this->sheetConfig($this->screen()->assertOk()->getContent());
 
         self::assertSame(
-            ['id' => 'turn-0001', 'kind' => 'word', 'word' => 'QUIZ', 'score' => 52, 'bingo' => false, 'note' => '', 'at' => '', 'removed' => false],
+            ['id' => 'turn-0001', 'kind' => 'word', 'word' => 'QUIZ', 'score' => 52, 'bingo' => false, 'note' => '', 'tiles' => '', 'at' => '', 'removed' => false],
             $config['sheets']['p-1']['turns'][0]
         );
     }

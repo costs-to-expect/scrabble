@@ -26,7 +26,7 @@ class Controller extends BaseController
     use ValidatesRequests;
 
     /** What the browser sends for a turn, everything else in the request is ignored */
-    protected const TURN_FIELDS = ['id', 'kind', 'word', 'score', 'bingo', 'note'];
+    protected const TURN_FIELDS = ['id', 'kind', 'word', 'score', 'bingo', 'note', 'tiles'];
 
     protected array $config;
 

@@ -2,6 +2,32 @@
 
 The complete changelog for the Costs to Expect Scrabble game scorer, our changelog follows the format defined at https://keepachangelog.com/en/1.0.0/
 
+## [1.1.0] - [2026-10-04]
+### Added
+- Tile by tile, a second way to score a word, switched on with the switch beside the close button of the entry sheet (it is
+  remembered on the device, the quick way is still what a device starts with). Type the word and every letter becomes a
+  tile worth its English points. Tap a tile to say what is under it (a double or triple letter, a double or triple word),
+  whether it is a blank and whether it was already on the board, and the score adds itself up, with each tile's points under
+  it and what the total is made of. The points of other words the tiles made can be added, seven new tiles are a bingo with
+  no tap. Changing a turn that was scored this way opens the same way. `public/js/tiles.js`.
+- The tiles are stored with the turn (`tiles`, two characters for each letter, see the README) and the server checks that they
+  are the tiles of the word and that a turn plays between one tile and seven. The score and the bingo are stored as they always
+  were, so the stats and everything else are unchanged.
+- `TileScoringTest` runs the tile script under Node against scores worked out by hand and checks that it reads the stored
+  tiles the way the server does. It is skipped where Node is not installed.
+- A step on the landing page for it, and the demo on the landing page has the switch too.
+### Changed
+- The header of a sheet (the title, the switch and the close button) stays in view when the sheet scrolls, and something that
+  takes the focus scrolls clear of the header and the save bar.
+- The entry sheet is a little tighter (the number pad keys are 48px, the score box is smaller) so it fits a phone such as an
+  iPhone 14 without scrolling, it scrolled by 30px, and a laptop screen.
+### Fixed
+- Copy link said Copied when nothing was copied on a page without the Clipboard API (a copy of the app on a plain http address
+  of its own). The fallback put its hidden field on the page behind the share sheet, where it cannot be selected. The field
+  now goes inside the sheet, it only counts when it really had the focus and all of its text was selected, and when it
+  could not copy the link is shown to copy by hand.
+- The table of every player on the stats page had the same name as its section.
+
 ## [1.0.0] - [2026-10-04]
 ### Added
 - The Scrabble game scorer, powered by the Costs to Expect API. It is built on the foundations of the Costs to Expect

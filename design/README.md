@@ -19,6 +19,10 @@ whoever changes it and for the next scorer. The pages are the Blade layouts and 
 - **A turn is a word and what it scored.** The letters are optional (people score a word and forget to type it), the score
   is not, the 50 point bingo is a toggle next to it and a pass or a tile swap is a turn that scores nothing. The tiles left
   at the end of the game are an adjustment, up or down, with a note.
+- **A word can also be scored tile by tile**, for people who would like the app to do the adding, and for children, who
+  find out how a double word works by seeing it happen. It is optional and it is a switch, because it asks for a little
+  more: the word has to be typed, and every tile that sits on something has to be said. The quick way stays exactly what
+  it was and is what a device starts with.
 - **Mistakes can be fixed.** Undo is a snackbar for six seconds, and tapping a turn later offers to change or remove it.
   Nothing is ever deleted from a stored sheet (see the README) so this is safe whatever the API does with an update.
 - **The game is finished by hand**, the owner decides, the finish sheet lists where everyone is and reminds them to use
@@ -61,10 +65,17 @@ practices, signed out and signed in, at 320, 390 and 1280px wide.
   and the landing page hero, which sit on a gradient from white to the palest teal) are dark on near white.
 - One note, that is how a scrolling sheet works: on a screen that is 640px tall or less the bottom rows of the number pad
   are under the Save bar until the sheet is scrolled. The bar says what the total is ("Save 118"), so nothing is lost
-  from view while the pad is scrolled.
+  from view while the pad is scrolled. Something that takes the focus scrolls clear of the bar (`scroll-py-24` on the
+  sheet), which is what axe found on the field for other words and what the sheet now does.
+- The tile by tile states were audited as well: empty, a word, a blank and a tile on the board and other words, a bingo, too
+  many new tiles.
 - No page scrolls sideways at 320px.
-- Touch targets on a phone: a turn row is 64px, a number pad key 56px, every other primary control 44px or more. The
-  Word, Pass and Adjust switch and the adjustment presets are 40px inside a 48px control, and the footer links are smaller.
+- Touch targets on a phone: a turn row is 64px, a number pad key 48px, a tile 45px wide and 56px tall, the buttons that
+  choose what is under a tile 56px, the toggles for a blank and a tile on the board 48px, every other primary control 44px or
+  more. The Word, Pass and Adjust switch, the adjustment presets and the Tile by tile switch are 40px, and the footer links are
+  smaller.
+- The tiles are one choice, a radio group with the arrow keys, Home and End to move between them. Each says its letter, its
+  value, what it sits on and what it counts for, the badges and the small numbers are for eyes.
 - A sheet is a native `<dialog>`: focus is trapped, Escape closes it, the page behind is inert. Focus returns to what
   opened it, and survives the list being redrawn.
 - Totals are `aria-live`, toggles are `aria-pressed` or `aria-checked`, a chosen player chip shows a tick and not only a
@@ -94,13 +105,33 @@ Everything on one page, `score-sheet.js` draws it from the data the page carries
 A bottom sheet on a phone, a centred one on a laptop. Who played (when it is not one player's own screen), then what
 happened, **Word**, **Pass** or **Adjust**, one tap each.
 
-- **Word**: the letters (optional, letters only), the score on a number pad, a Bingo toggle that adds the 50.
+- **Word**, quick: the letters (optional, letters only), the score on a number pad, a Bingo toggle that adds the 50.
+- **Word**, tile by tile: see below.
 - **Pass**: one line that says it still ends the turn, and a button.
 - **Adjust**: presets for the usual reasons (Tiles left, Went out, Penalty), a minus or plus, the points and an optional note.
 
-The save button is at the bottom of the sheet and sticks there, so it is always in reach, and it says what is about to be
-saved ("Save 118"). The number pad is the piece the three games share: it enters a Yahtzee sum, a Scrabble score and a
-Carcassonne score.
+The header of the sheet, the title, the switch and the close button, sticks to the top, and the save button sticks to the
+bottom, so both are always in reach, and the button says what is about to be saved ("Save 118"). Something that takes the
+focus scrolls clear of both. The number pad is the piece the three games share: it enters a Yahtzee sum, a Scrabble score
+and a Carcassonne score.
+
+**The switch is in the header, beside the close button**, so that it is at the top of the sheet and costs no height. It
+waits (it is dimmed) while Pass or Adjust is chosen, in the same place, so nothing on the sheet moves. A switch inside the
+Word panel would have moved the Word, Pass and Adjust control, and the sheet is anchored to the bottom of the screen, so
+everything above it already moves when the panels change height. Below 360px it says "Tiles" instead of "Tile by tile".
+
+**Tile by tile** is a rack of tiles, seven to a row, so that a bingo is one row. Each tile has its letter and its value like a
+real tile and its points, with the letter bonus, underneath. What is under a tile is a badge in the colour it has on the
+board (the same two lines of words on the button that chooses it, never colour alone), a blank is hollow with a dashed edge, a
+tile that was already on the board is grey with a dotted one. The total comes straight under the tiles, so that the effect of
+each choice is seen where it is made, with what it is made of ("Tiles 42, double word x2 = 84"); the tile that is open has
+its options under that. The words that were made across the one typed are one optional field, because nearly every play
+beyond the first makes one, and without it the total would be wrong for most of a game. Bingo has no toggle, seven new tiles
+are a bingo.
+
+Why the sheet is as short as it is: it is the thing used most in a game. The quick sheet fits an iPhone 14 and a laptop
+screen without scrolling (it scrolled by 30px, the number pad keys are 48px now, they were 56px), tile by tile scrolls a
+little on a phone and keeps the save bar, with the total in it, in view.
 
 ## Home, games, stats
 

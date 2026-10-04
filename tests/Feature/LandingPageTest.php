@@ -59,7 +59,7 @@ class LandingPageTest extends TestCase
         preg_match_all('#images/([a-z-]+\.png)#', $html, $matches);
         $pictures = array_unique($matches[1]);
 
-        foreach (['new-game.png', 'score-sheet.png', 'share-links.png', 'game-stats.png'] as $picture) {
+        foreach (['new-game.png', 'score-sheet.png', 'tile-by-tile.png', 'share-links.png', 'game-stats.png'] as $picture) {
             self::assertContains($picture, $pictures);
         }
 

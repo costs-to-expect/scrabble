@@ -81,6 +81,7 @@
                 @foreach ([
                     ['Pick who&rsquo;s playing', 'One of you signs in and chooses the players, two to four of them. Played last night? Play again with the same people in one tap.', 'new-game.png', 'A screen shot of choosing the players for a new game'],
                     ['Add a turn, the screen does the rest', 'Type the word, enter what it scored and tap add. Played all seven tiles? One tap for the 50 point bingo. Everyone is on the same screen and whoever is next up is ready, so keeping score never gets in the way of the game.', 'score-sheet.png', 'A screen shot of the score sheet for Scrabble, with a player\'s turns and their best and lowest word'],
+                    ['Or let it count the tiles', 'Switch on Tile by tile and type the word. Every letter becomes a tile, tap one to say it sits on a double or triple square, is a blank or was already on the board, and the score adds itself up. It is optional, and a fun way for children to see how the points are made.', 'tile-by-tile.png', 'A screen shot of scoring the word QUIZ tile by tile, with a triple letter square under the Q and a double word square under the Z'],
                     ['Or let everyone add their own', 'Every player gets a link to their own score sheet and can add their own words on their own phone, no app and no sign up. It is up to you, you can keep all the score yourself and never share a thing.', 'share-links.png', 'A screen shot of sharing a score sheet link with each player'],
                     ['Finish the game, see the numbers', 'When the bag is empty and someone has played out, finish the game. The highest and lowest word, the longest word, every bingo and who won are kept in your history and your stats.', 'game-stats.png', 'A screen shot of the overview of a finished game with the highlights of the game'],
                 ] as [$title, $text, $image, $alt])
@@ -103,7 +104,7 @@
                 <div class="sticky top-24 mx-auto w-72">
                     <div class="rounded-[2.5rem] bg-stone-900 p-2 shadow-lift">
                         <div class="relative aspect-[1/2] overflow-hidden rounded-[2rem] bg-white">
-                            @foreach (['new-game.png' => 'A screen shot of choosing the players for a new game', 'score-sheet.png' => 'A screen shot of the score sheet for Scrabble, with a player\'s turns and their best and lowest word', 'share-links.png' => 'A screen shot of sharing a score sheet link with each player', 'game-stats.png' => 'A screen shot of the overview of a finished game with the highlights of the game'] as $image => $alt)
+                            @foreach (['new-game.png' => 'A screen shot of choosing the players for a new game', 'score-sheet.png' => 'A screen shot of the score sheet for Scrabble, with a player\'s turns and their best and lowest word', 'tile-by-tile.png' => 'A screen shot of scoring the word QUIZ tile by tile, with a triple letter square under the Q and a double word square under the Z', 'share-links.png' => 'A screen shot of sharing a score sheet link with each player', 'game-stats.png' => 'A screen shot of the overview of a finished game with the highlights of the game'] as $image => $alt)
                                 <img data-shot @if ($loop->first) data-active @else aria-hidden="true" @endif src="{{ asset('images/'.$image) }}" width="300" height="600" loading="lazy" alt="{{ $alt }}" class="absolute inset-0 h-full w-full object-cover object-top opacity-0 transition-opacity duration-300 data-[active]:opacity-100 motion-reduce:transition-none">
                             @endforeach
                         </div>
@@ -147,6 +148,7 @@
     </section>
 
     @push('scripts')
+        <script src="{{ asset('js/tiles.js') }}?v={{ config('app.version.js') }}" defer></script>
         <script src="{{ asset('js/turn-entry.js') }}?v={{ config('app.version.js') }}" defer></script>
         <script src="{{ asset('js/landing.js') }}?v={{ config('app.version.js') }}" defer></script>
     @endpush

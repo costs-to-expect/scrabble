@@ -104,8 +104,9 @@
     }
 
     /* A native <dialog> is the sheet: it is a bottom sheet on a phone and a centred dialog from sm up */
+    /* scroll-py: something that takes the focus scrolls to clear the header and the save bar that stick to the edges */
     dialog.sheet {
-        @apply m-0 mt-auto max-h-[92dvh] w-full max-w-none overflow-y-auto rounded-t-3xl bg-white p-0 text-stone-900 shadow-2xl motion-safe:open:animate-sheet-in sm:m-auto sm:max-w-md sm:rounded-3xl;
+        @apply m-0 mt-auto max-h-[92dvh] w-full max-w-none scroll-py-24 overflow-y-auto rounded-t-3xl bg-white p-0 text-stone-900 shadow-2xl motion-safe:open:animate-sheet-in sm:m-auto sm:max-w-md sm:rounded-3xl;
     }
 
     dialog.sheet::backdrop {

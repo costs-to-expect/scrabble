@@ -383,7 +383,7 @@
     }
 
     function fields(turn) {
-        return {id: turn.id, kind: turn.kind, word: turn.word, score: turn.score, bingo: turn.bingo, note: turn.note};
+        return {id: turn.id, kind: turn.kind, word: turn.word, score: turn.score, bingo: turn.bingo, note: turn.note, tiles: turn.tiles || ''};
     }
 
     function requestFor(operation) {
