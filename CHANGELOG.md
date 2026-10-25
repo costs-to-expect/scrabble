@@ -2,7 +2,7 @@
 
 The complete changelog for the Costs to Expect Scrabble game scorer, our changelog follows the format defined at https://keepachangelog.com/en/1.0.0/
 
-## [Unreleased]
+## [1.2.0] - [2026-10-24]
 ### Changed
 - The app runs on PHP 8.5. The Docker image is `php:8.5-apache`, `composer.json` requires `^8.5` and pins the platform to
   8.5.12 (`roave/security-advisories` conflicts with anything older), and the tests run on PHP 8.5 in CI. No package versions
