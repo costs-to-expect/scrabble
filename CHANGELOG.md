@@ -2,13 +2,13 @@
 
 The complete changelog for the Costs to Expect Scrabble game scorer, our changelog follows the format defined at https://keepachangelog.com/en/1.0.0/
 
-## [1.2.0] - [2026-10-24]
+## [1.02.0] - [2026-10-24]
 ### Changed
 - The app runs on PHP 8.5. The Docker image is `php:8.5-apache`, `composer.json` requires `^8.5` and pins the platform to
   8.5.12 (`roave/security-advisories` conflicts with anything older), and the tests run on PHP 8.5 in CI. No package versions
   changed.
 
-## [1.1.0] - [2026-10-04]
+## [1.01.0] - [2026-10-04]
 ### Added
 - Tile by tile, a second way to score a word, switched on with the switch beside the close button of the entry sheet (it is
   remembered on the device, the quick way is still what a device starts with). Type the word and every letter becomes a
@@ -34,7 +34,7 @@ The complete changelog for the Costs to Expect Scrabble game scorer, our changel
   could not copy the link is shown to copy by hand.
 - The table of every player on the stats page had the same name as its section.
 
-## [1.0.0] - [2026-10-04]
+## [1.00.0] - [2026-10-04]
 ### Added
 - The Scrabble game scorer, powered by the Costs to Expect API. It is built on the foundations of the Costs to Expect
   Yahtzee scorer and looks the same: players are the API's categories, games are its items and score sheets are the
