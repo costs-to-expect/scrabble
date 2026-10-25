@@ -1,4 +1,4 @@
-[![Minimum PHP Version](https://img.shields.io/badge/php-^8.2-8892BF.svg)](https://php.net/)
+[![Minimum PHP Version](https://img.shields.io/badge/php-^8.5-8892BF.svg)](https://php.net/)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/costs-to-expect/scrabble/blob/main/LICENSE)
 [![Tests](https://github.com/costs-to-expect/scrabble/actions/workflows/tests.yml/badge.svg)](https://github.com/costs-to-expect/scrabble/actions/workflows/tests.yml)
 
@@ -93,8 +93,8 @@ The tests use an in-memory SQLite database and fake every request to the API, th
 database (the test case refuses to run against anything else) or a real API. `phpunit.xml` sets everything they 
 use, including a throwaway application key, so they need no `.env`.
 
-GitHub Actions runs them on PHP 8.2, 8.3, 8.4 and 8.5 for every push and pull request, see 
-`.github/workflows/tests.yml`. 8.2 is the version the app runs on, the others are the versions it is moving to.
+GitHub Actions runs them on PHP 8.5 for every push and pull request, see 
+`.github/workflows/tests.yml`. 8.5 is the version the app runs on.
 
 The tiles of a word are added up in the browser, `public/js/tiles.js`, which PHPUnit cannot call. `TileScoringTest` runs
 the script under Node against scores worked out by hand and checks that it reads the stored tiles the way
@@ -207,7 +207,8 @@ recent). A game that ends level is a win for everyone on the top score.
 
 ## PHP and Laravel versions
 
-The app runs on Laravel 12 and PHP 8.2, `composer.json` pins the platform to 8.2 so a `composer update` on a newer 
-PHP on your machine can't pick packages the production server can't run. When the app moves to PHP 8.4 or later,
+The app runs on Laravel 12 and PHP 8.5, `composer.json` pins the platform to 8.5.12 so a `composer update` on a newer 
+PHP on your machine can't pick packages the production server can't run. The pin is a patch release because 
+`roave/security-advisories` conflicts with PHP below 8.5.12. When the app moves to another PHP version,
 change the Dockerfile image, `require.php` and `config.platform.php` together, Laravel 13 needs PHP 8.3 or later.
-The tests run on PHP 8.2 to 8.5 in CI.
+The tests run on PHP 8.5 in CI.
